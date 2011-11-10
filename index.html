@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Message Notify Demo</title>
+        
+        <script src="jquery.min.js" type="text/javascript"></script>
+        <script type="text/javascript">
+        	var time = new Date().getMilliseconds();
+        	var randomnumber=Math.floor(Math.random()*10000);
+			var scriptfile='messageNotify.js?r=' + time;
+			var headID = document.getElementsByTagName("head")[0];         
+			var newScript = document.createElement('script');
+			newScript.type = 'text/javascript';
+			newScript.src = scriptfile;
+			headID.appendChild(newScript);
+
+        </script>
+        <script type="text/javascript">
+        	
+        </script>
+        <style>
+        	#messagebox {
+				background: none repeat scroll 0 0 #C6C6C6;
+				border: 1px solid #666;
+				border-radius: 2px 2px 2px 2px;
+				cursor: pointer;
+				float: left;
+				font-family: Arial;
+				font-size: 12px;
+				font-weight: normal;
+				height: 20px;
+				letter-spacing: 0.1em;
+				line-height: 20px;
+				margin-bottom: 7px;
+				padding: 2px 1px 3px 0;
+				text-shadow: 0 1px 0 white;
+				/*text-transform: uppercase;*/
+			}
+			
+			#messagebox div.textContainer {
+				float: right;
+				overflow: hidden;
+				height: 21px;
+				padding-right: 5px;
+			}
+			
+			#messagebox div.iconContainer {
+				float: left;
+			    margin: 3px 6px;
+			    width: 12px;
+			}
+			
+			#messagebox div.iconContainer img.icon {
+			    left: 0;
+			    padding-left: 0;
+			    position: relative;
+			    top: 0;
+			}
+
+        </style>
+    </head>
+    <body>
+        <h1>Demo</h1>
+        <div>
+    		<div id='messagebox'>
+				<div class="iconContainer">
+					<img src='images/bubble_tiny_black3.png' class='icon' />
+				</div>
+				<div class="textContainer">
+					<span class="text" id='messagebox-text'>Information</span>
+				</div>
+			</div>
+        </div>
+    </body>
+</html>

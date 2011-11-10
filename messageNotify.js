@@ -112,14 +112,17 @@ var MessageNotify = function(){
 	this.mouseOver = function(ev) {
 		
 		// Only perform this action the first time.
-		if(!self.__data.mouseover) {		
+		if(!self.__data.mouseover) {	
 			// Set it to true as this will be over activated.
 			self.__data.mouseover = true;
 					 
 			if(self.hoverToast) {
-				self.label.value('New messages')
-				self.open(function() {
-					if(self.__data.mouseover) {
+				self.openWithText('New Messages', function() {
+					// Check now if already removed mouse (prettier)
+					if(!self.__data.mouseover) {
+						//self._forceStopAnimation();
+						self.close();
+					} else if(self.__data.mouseover) {
 						//do toast dropout
 					}
 				});
@@ -128,11 +131,25 @@ var MessageNotify = function(){
 	}
 	
 	this.mouseOut = function(ev){
+		var preMouseOver = self.__data.mouseover;
 		self.__data.mouseover = false;
+		self.me("Mouse Out");
 		
+		//self._forceStopAnimation();
+		//self.close();
+		
+		if(preMouseOver){
+			self.close();
+		}
 		//Has toast?
 			// remove
 	}
+	
+	this._forceStopAnimation = function() {
+		self.me("What?!")
+		self.label.element().stop();
+	}
+	
 	/**
 	 * Shuts this message element down to just an icon.
 	 * The icon can still flash and you may still have the stretchy 
@@ -161,6 +178,7 @@ var MessageNotify = function(){
 		
 		if(self.closed) {
 			var _w = self.__data.widthBeforeClose
+			
 			self.label.animateTo(0, _w, function(){
 				if(self.icon.blinking) {
 					self.icon.off()
@@ -171,8 +189,23 @@ var MessageNotify = function(){
 					_args[0]();
 				}
 			})
+			
 		}
 	}
+	
+	
+	this.openWithText = function() {
+		var _args = arguments
+		var cb = (_args[1])? _args[1]: null;
+		
+		self.label.value(_args[0], function(){
+			self.__data.widthBeforeClose = self.label.width()
+			self.open(function(){
+				if(cb) cb();
+			});
+		});
+	}
+	
 	
 	this.openState = function(bool) {
 		if(bool) {
@@ -193,8 +226,11 @@ var MessageNotify = function(){
 		self.icon = new this.Icon()
 		self.label = new this.Label()
 		
-		self.element.mouseover(self.mouseOver)
-		self.element.mouseout(self.mouseOut)
+		
+		self.element.mouseenter(self.mouseOver)
+		self.element.mouseleave(self.mouseOut)
+		
+		self.me('self.element', self.element)
 	}
 	
 	
@@ -491,7 +527,7 @@ var MessageNotify = function(){
 			if(from == to){
 				callback();
 			} else {
-				var o = {width: to + 1, 'padding-right': '5px'};
+				var o = {width: to + 3, 'padding-right': '5px'};
 				
 				for(d in data){
 					o[d] = data[d];	
