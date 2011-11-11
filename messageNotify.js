@@ -65,7 +65,7 @@ var MessageNotify = function(){
 	this.animationSpeed = 'slow';
 	
 	// If the title of the message is to long, it should be
-	// cut in length to a determined length. (chars)
+	// cut in length to a determined length.
 	// -1 means no concatenation
 	this.concatTitle = 26;
 	
@@ -84,7 +84,7 @@ var MessageNotify = function(){
 	 * If the messagebox is closed, you can optionally pop the title 
 	 * for a number of seconds before the message box closes itself once more.
 	 */
-	this.popTitle = true
+	self.popTitle = true
 	
 	/**
 	 * If popTitle is true, after popTitle animation is complete, the messagebox
@@ -92,14 +92,14 @@ var MessageNotify = function(){
 	 * If this variable is false, the title will stay and messagebox will
 	 * not return to previous state (closed) 
 	 */
-	this.stickyPopTitle = false
+	self.stickyPopTitle = false
 	
 	/**
 	 * To have the icon constantly blink whilst unread messages exist, apply
 	 * the message waiting.
 	 * This will blink the icon indefinitely until an action is performed 
 	 */
-	this.messageWaiting = true;
+	self.messageWaiting = true;
 	
 	/*
 	 * when hovering over the messagebox, after a certain time, the toast
@@ -107,6 +107,7 @@ var MessageNotify = function(){
 	 * If this is set to false the message toasts must be called using a different
 	 * method.
 	 */
+<<<<<<< HEAD
 	this.hoverToast = true;
 	
 	// If the element is running an animation
@@ -225,12 +226,17 @@ var MessageNotify = function(){
 	this.width = function(){
 		return self.element.width()
 	}
+=======
+	self.hoverToast = true;
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
 	
 	this.mouseOver = function(ev) {
+		
 		// Only perform this action the first time.
-		if(!self.__data.mouseover) {
+		if(!self.__data.mouseover) {	
 			// Set it to true as this will be over activated.
 			self.__data.mouseover = true;
+<<<<<<< HEAD
 			
 			if(m.animating == false && self.hoverToast == true) {
 				var _message = null;
@@ -265,6 +271,11 @@ var MessageNotify = function(){
 				}
 				//self.me(_message)
 				self.openWithText(_message, function() {
+=======
+					 
+			if(self.hoverToast) {
+				self.openWithText('New Messages', function() {
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
 					// Check now if already removed mouse (prettier)
 					if(!self.__data.mouseover) {
 						//self._forceStopAnimation();
@@ -278,9 +289,8 @@ var MessageNotify = function(){
 							}
 						}, self.hoverToastDelay)
 					}
-				}, {speed: 'fast'});
+				});
 			}
-			
 		}
 	}
 	
@@ -288,7 +298,14 @@ var MessageNotify = function(){
 		var preMouseOver = self.__data.mouseover;
 		self.__data.mouseover = false;
 		
+<<<<<<< HEAD
 		if(preMouseOver && self.allowClose){
+=======
+		//self._forceStopAnimation();
+		//self.close();
+		
+		if(preMouseOver){
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
 			self.close();
 		}
 		//Has toast?
@@ -296,6 +313,7 @@ var MessageNotify = function(){
 	}
 	
 	this._forceStopAnimation = function() {
+		self.me("What?!")
 		self.label.element().stop();
 	}
 	
@@ -306,8 +324,6 @@ var MessageNotify = function(){
 	 */
 	this.close = function() {
 		var _args = arguments;
-		var obj = (_args[1])? _args[1]: {};
-		self.me("Close argument 0", _args[0])
 		if(!self.closed)
 			this.label.fadeOut(function(){
 				self.__data.widthBeforeClose = self.label.width()
@@ -316,7 +332,7 @@ var MessageNotify = function(){
 					if(_args[0]) {
 						_args[0]()
 					}
-				}, {'padding-right': 0}, obj);
+				}, {'padding-right': 0})
 			});
 	}
 	
@@ -325,7 +341,7 @@ var MessageNotify = function(){
 	 */
 	this.open = function() {
 		var _args = arguments;
-		var obj = (_args[1])? _args[1]: {};
+		
 		
 		if(self.closed) {
 			var _w = self.__data.widthBeforeClose
@@ -339,7 +355,7 @@ var MessageNotify = function(){
 				if(_args[0]) {
 					_args[0]();
 				}
-			}, {}, obj)
+			})
 			
 		}
 	}
@@ -348,12 +364,12 @@ var MessageNotify = function(){
 	this.openWithText = function() {
 		var _args = arguments
 		var cb = (_args[1])? _args[1]: null;
-		var obj = (_args[2])? _args[2]: {};
+		
 		self.label.value(_args[0], function(){
 			self.__data.widthBeforeClose = self.label.width()
 			self.open(function(){
 				if(cb) cb();
-			}, obj);
+			});
 		});
 	}
 	
@@ -365,6 +381,23 @@ var MessageNotify = function(){
 			self.close();
 		}
 		
+	}
+	
+	/**
+	 * Initial function used as a class construct
+	 */
+	this.init = function(){
+		var args = arguments
+		self.me('init Arguments passed ', args)
+		self.element = $(args[0])
+		self.icon = new this.Icon()
+		self.label = new this.Label()
+		
+		
+		self.element.mouseenter(self.mouseOver)
+		self.element.mouseleave(self.mouseOut)
+		
+		self.me('self.element', self.element)
 	}
 	
 	
@@ -383,10 +416,7 @@ var MessageNotify = function(){
 		if(self.concatTitle > 0) { 
 			// write a smaller version of the title if required
 			title = _title.substring(0, self.concatTitle);
-			self.__data.concatedTitle = false;
-			self.__data.fullTitle = _title;
 			if( _title.length > self.concatTitle) {
-				self.__data.concatedTitle = true;
 				title += '<span class="hellip">&hellip;</span>';
 			}
 		} else {
@@ -745,6 +775,67 @@ var MessageNotify = function(){
 			self.fadeIn(self.textElement, callBack);
 		}
 		
+<<<<<<< HEAD
+=======
+		/**
+		 * Measure and resize the box to the width of the given string
+		 * 
+		 * animateTo(to)
+		 * animateTo(from, to)
+		 * animateTo(to, callback)
+		 * animateTo(from, to, callback)
+		 * animateTo(from, to, callback, animationDataObject)
+		 * 
+		 */
+		this.animateTo = function(){
+			var _args = arguments
+			var from = 0;
+			var to = 0;
+			var callback = null;
+			var data = {}
+			
+			if(arguments.length == 1)
+			{
+				from = self.label.width()
+				to = _args[0]
+			} else if(_args.length == 2) {
+				from = self.label.width();
+				to = _args[0];
+				if(jQuery.isFunction(_args[1])) {
+					callback = _args[1]
+				} else {
+					to = _args[1]
+				}
+			} else if(_args.length >= 3) {
+				from = _args[0]
+				to = _args[1]
+				callback = _args[2]
+				
+				if(_args[3]) {
+					data = _args[3]		
+				}
+			}
+			
+			//self.me("Arg length", _args.length, _args )
+			//self.me("from", from, 'to', to, 'callback', callback())
+			
+			self.label.width(from);
+			
+			if(from == to){
+				callback();
+			} else {
+				var o = {width: to + 3, 'padding-right': '5px'};
+				
+				for(d in data){
+					o[d] = data[d];	
+				}
+								
+				self.label.element().parent().animate(o, self.animationSpeed, function(){
+					if(callback) callback();
+				});
+			}
+		}
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
 		
 		// Temp change to text for a number of seconds
 		this.say = function(string){}
@@ -1004,9 +1095,6 @@ function m() {
    display: 'none'
   });
 
-	if(typeof(el) == 'string') {
-		el = "<div>" + el + "</div>";
-	}
   $(div).html($(el).html());
   var styles = ['font-size','font-style', 'font-weight', 'font-family','line-height', 'text-transform', 'letter-spacing'];
   $(styles).each(function() {
