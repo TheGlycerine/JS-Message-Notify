@@ -65,7 +65,7 @@ var MessageNotify = function(){
 	this.animationSpeed = 'slow';
 	
 	// If the title of the message is to long, it should be
-	// cut in length to a determined length.
+	// cut in length to a determined length. (chars)
 	// -1 means no concatenation
 	this.concatTitle = 26;
 	
@@ -84,7 +84,7 @@ var MessageNotify = function(){
 	 * If the messagebox is closed, you can optionally pop the title 
 	 * for a number of seconds before the message box closes itself once more.
 	 */
-	self.popTitle = true
+	this.popTitle = true
 	
 	/**
 	 * If popTitle is true, after popTitle animation is complete, the messagebox
@@ -92,14 +92,14 @@ var MessageNotify = function(){
 	 * If this variable is false, the title will stay and messagebox will
 	 * not return to previous state (closed) 
 	 */
-	self.stickyPopTitle = false
+	this.stickyPopTitle = false
 	
 	/**
 	 * To have the icon constantly blink whilst unread messages exist, apply
 	 * the message waiting.
 	 * This will blink the icon indefinitely until an action is performed 
 	 */
-	self.messageWaiting = true;
+	this.messageWaiting = true;
 	
 	/*
 	 * when hovering over the messagebox, after a certain time, the toast
@@ -107,17 +107,114 @@ var MessageNotify = function(){
 	 * If this is set to false the message toasts must be called using a different
 	 * method.
 	 */
-	self.hoverToast = true;
+	this.hoverToast = true;
+	
+	// If the element is running an animation
+	// Not including the icon blinking.
+	this.animating = false;
+	
+	//The alert text on mouse over
+	this.openMessage = null; 'New Messages'; //function
+	
+	/**
+	 * Maximum width the element can be. 
+	 * (chars)
+	 */
+	this.maxWidth = 100;
+	
+	/**
+	 * Initial function used as a class construct
+	 */
+	this.init = function(){
+		var args = arguments
+		self.element = $(args[0])
+		self.icon = new this.Icon()
+		self.label = new this.Label()
+		
+		
+		self.element.mouseenter(self.mouseOver)
+		self.element.mouseleave(self.mouseOut)
+		self.element.click(self.click)
+	}
+	
+	this.click = function(ev) {
+		//self.expand()
+		
+		self.me("I've been clicked");
+		self.me(self.element)
+		ev.stopPropagation()
+		
+		self.__externalClickListener(true)	
+		
+	}
+	
+	this.__externalClickListener = function() {
+		var bool = arguments[0]
+		
+		if(bool){
+			if(!self.__data.externalClickListener) {
+				self.__data.externalClickListener = true;
+				$('html').click(function(){
+					self.collapse();
+				});
+			}
+		} else {
+			if(self.__data.externalClickListener) {
+				self.__data.externalClickListener = false;
+				$('html').unblind('click');
+			}
+		}
+	}
+	
+	this.collapse = function() {
+		this.__externalClickListener(true)	
+		self.me("Collapse");
+	}
 	
 	this.mouseOver = function(ev) {
-		
 		// Only perform this action the first time.
-		if(!self.__data.mouseover) {	
+		if(!self.__data.mouseover) {
 			// Set it to true as this will be over activated.
 			self.__data.mouseover = true;
-					 
-			if(self.hoverToast) {
-				self.openWithText('New Messages', function() {
+			
+			if(!self.animating && self.hoverToast) {
+				
+				var _message = null;
+				
+				/*
+				 * For ease of use, giving null would be a nice option
+				 * therefore a pretty little patch here will convert it to
+				 * false. Not sure why I did it like this... *O.o...
+				 */
+				var _open = (self.openMessage == null)? false: self.openMessage;
+				
+				
+				if(_open) {
+					if(typeof(_open) == 'function') {
+						_message = String(self.openMessage());
+					}else{
+						_message = self.openMessage;
+					}
+				} else {
+					
+					if(self.__data.concatedTitle) {
+						
+						//get the length of the full title,
+						
+						//check to see if its over the max width, 
+						//if it is, send a concatenated version to value()
+						//else show it.
+						//var _textLength = $.textMetrics(self.__data.fullTitle).width
+						if(self.__data.fullTitle.length > self.maxWidth) {
+							//Make it smaller ...
+							_message = self.__data.fullTitle.substring(0, self.__data.fullTitle - self.maxWidth);
+						} else {
+							_message = self.__data.fullTitle;
+						}
+					}
+				}
+				
+				self.openWithText(_message, function() {
 					// Check now if already removed mouse (prettier)
 					if(!self.__data.mouseover) {
 						//self._forceStopAnimation();
@@ -125,8 +222,9 @@ var MessageNotify = function(){
 					} else if(self.__data.mouseover) {
 						//do toast dropout
 					}
-				});
+				}, {speed: 'fast'});
 			}
+			
 		}
 	}
 	
@@ -134,9 +232,6 @@ var MessageNotify = function(){
 		var preMouseOver = self.__data.mouseover;
 		self.__data.mouseover = false;
 		self.me("Mouse Out");
-		
-		//self._forceStopAnimation();
-		//self.close();
 		
 		if(preMouseOver){
 			self.close();
@@ -146,7 +241,6 @@ var MessageNotify = function(){
 	}
 	
 	this._forceStopAnimation = function() {
-		self.me("What?!")
 		self.label.element().stop();
 	}
 	
@@ -157,6 +251,8 @@ var MessageNotify = function(){
 	 */
 	this.close = function() {
 		var _args = arguments;
+		var obj = (_args[1])? _args[1]: {};
+		self.me("Close argument 0", _args[0])
 		if(!self.closed)
 			this.label.fadeOut(function(){
 				self.__data.widthBeforeClose = self.label.width()
@@ -165,7 +261,7 @@ var MessageNotify = function(){
 					if(_args[0]) {
 						_args[0]()
 					}
-				}, {'padding-right': 0})
+				}, {'padding-right': 0}, obj);
 			});
 	}
 	
@@ -174,7 +270,7 @@ var MessageNotify = function(){
 	 */
 	this.open = function() {
 		var _args = arguments;
-		
+		var obj = (_args[1])? _args[1]: {};
 		
 		if(self.closed) {
 			var _w = self.__data.widthBeforeClose
@@ -188,7 +284,7 @@ var MessageNotify = function(){
 				if(_args[0]) {
 					_args[0]();
 				}
-			})
+			}, {}, obj)
 			
 		}
 	}
@@ -197,12 +293,12 @@ var MessageNotify = function(){
 	this.openWithText = function() {
 		var _args = arguments
 		var cb = (_args[1])? _args[1]: null;
-		
+		var obj = (_args[2])? _args[2]: {};
 		self.label.value(_args[0], function(){
 			self.__data.widthBeforeClose = self.label.width()
 			self.open(function(){
 				if(cb) cb();
-			});
+			}, obj);
 		});
 	}
 	
@@ -214,23 +310,6 @@ var MessageNotify = function(){
 			self.close();
 		}
 		
-	}
-	
-	/**
-	 * Initial function used as a class construct
-	 */
-	this.init = function(){
-		var args = arguments
-		self.me('init Arguments passed ', args)
-		self.element = $(args[0])
-		self.icon = new this.Icon()
-		self.label = new this.Label()
-		
-		
-		self.element.mouseenter(self.mouseOver)
-		self.element.mouseleave(self.mouseOut)
-		
-		self.me('self.element', self.element)
 	}
 	
 	
@@ -249,7 +328,10 @@ var MessageNotify = function(){
 		if(self.concatTitle > 0) { 
 			// write a smaller version of the title if required
 			title = _title.substring(0, self.concatTitle);
+			self.__data.concatedTitle = false;
+			self.__data.fullTitle = _title;
 			if( _title.length > self.concatTitle) {
+				self.__data.concatedTitle = true;
 				title += '<span class="hellip">&hellip;</span>';
 			}
 		} else {
@@ -496,9 +578,9 @@ var MessageNotify = function(){
 			var to = 0;
 			var callback = null;
 			var data = {}
+			var _speed = 'slow'
 			
-			if(arguments.length == 1)
-			{
+			if(arguments.length == 1) {
 				from = self.label.width()
 				to = _args[0]
 			} else if(_args.length == 2) {
@@ -519,6 +601,11 @@ var MessageNotify = function(){
 				}
 			}
 			
+			if(_args[4]){
+				_speed = (_args[4]['speed'])? _args[4]['speed']: self.animationSpeed;
+				self.me(_args[4], _speed)
+			}
+			
 			//self.me("Arg length", _args.length, _args )
 			//self.me("from", from, 'to', to, 'callback', callback())
 			
@@ -532,8 +619,9 @@ var MessageNotify = function(){
 				for(d in data){
 					o[d] = data[d];	
 				}
-								
-				self.label.element().parent().animate(o, self.animationSpeed, function(){
+				self.animating = true;			
+				self.label.element().parent().animate(o, _speed, function(){
+					self.animating = false;
 					if(callback) callback();
 				});
 			}
@@ -738,6 +826,9 @@ function m() {
    display: 'none'
   });
 
+	if(typeof(el) == 'string') {
+		el = "<div>" + el + "</div>";
+	}
   $(div).html($(el).html());
   var styles = ['font-size','font-style', 'font-weight', 'font-family','line-height', 'text-transform', 'letter-spacing'];
   $(styles).each(function() {
