@@ -28,7 +28,7 @@
  * callback: 'callback'
  * 
  * 		A function callback.
-				} 
+				}  
  */
 var MessageNotify = function(){
 	
@@ -122,6 +122,10 @@ var MessageNotify = function(){
 	 */
 	this.maxWidth = 100;
 	
+	/* If the element is in full view - is its collapse to read messages
+	 */
+	this.expanded = false;
+	
 	/**
 	 * Initial function used as a class construct
 	 */
@@ -135,16 +139,18 @@ var MessageNotify = function(){
 		self.element.mouseenter(self.mouseOver)
 		self.element.mouseleave(self.mouseOut)
 		self.element.click(self.click)
+		
+		self.__store('mouseover', false)
 	}
 	
 	this.click = function(ev) {
-		//self.expand()
-		
-		self.me("I've been clicked");
-		self.me(self.element)
 		ev.stopPropagation()
 		
-		self.__externalClickListener(true)	
+		if(!self.expanded){
+			self.__store('expandClickActive', true)
+			self.expand()
+		}
+		
 		
 	}
 	
@@ -161,81 +167,134 @@ var MessageNotify = function(){
 		} else {
 			if(self.__data.externalClickListener) {
 				self.__data.externalClickListener = false;
-				$('html').unblind('click');
+				$('html').unbind('click');
 			}
 		}
 	}
 	
 	this.collapse = function() {
-		this.__externalClickListener(true)	
-		self.me("Collapse");
+		var easing = null;
+		this.__externalClickListener(false)	
+		self.expanded = false
+		self.label.animateTo(400, self.__store('widthBeforeExpand'), function(){
+			self.close()
+		});
+		//self.close()
+		/*
+		self.element.animate({height: self.__store('heightBeforeExpand')},function(){ 
+			self.expanded = false;
+			self.element.css({'position': self.__store('positionBeforeExpand')});
+			self.element.css({width: });
+			
+		});
+		*/
 	}
 	
+	this.expand = function() {
+		var easing = null;
+		self.__externalClickListener(true)
+		self.__store('heightBeforeExpand', self.element.height())
+		self.__store('widthBeforeExpand', self.element.width())
+		self.__store('positionBeforeExpand', self.element.css('position'))
+		self.expanded = true
+		self.label.animateTo(400)
+		
+		/*
+		self.label.element().animate({width: 400}, 'slow', easing, function(){
+			self.expanded = true
+			self.element.css({zIndex: 99, position: 'relative'});
+			self.element.animate({height:300});
+		});
+		*/
+	}
+	
+	this.__store = function() {
+		var el = arguments[0];
+		
+		if(arguments.length == 2) {
+			if(arguments[1] != 'undefined' ){ 
+				self.__data[el] = arguments[1];
+			};
+		};
+		
+		return self.__data[el]
+	}
 	this.mouseOver = function(ev) {
 		// Only perform this action the first time.
-		if(!self.__data.mouseover) {
-			// Set it to true as this will be over activated.
-			self.__data.mouseover = true;
-			
-			if(!self.animating && self.hoverToast) {
+		if(self.expanded == false)
+			if(self.__data.mouseover == false) {
+				// Set it to true as this will be over activated.
+				self.__data.mouseover = true;
 				
-				var _message = null;
-				
-				/*
-				 * For ease of use, giving null would be a nice option
-				 * therefore a pretty little patch here will convert it to
-				 * false. Not sure why I did it like this... *O.o...
-				 */
-				var _open = (self.openMessage == null)? false: self.openMessage;
-				
-				
-				if(_open) {
-					if(typeof(_open) == 'function') {
-						_message = String(self.openMessage());
-					}else{
-						_message = self.openMessage;
-					}
-				} else {
+				if(!self.animating && self.hoverToast) {
 					
-					if(self.__data.concatedTitle) {
+					var _message = null;
+					
+					/*
+					 * For ease of use, giving null would be a nice option
+					 * therefore a pretty little patch here will convert it to
+					 * false. Not sure why I did it like this... *O.o...
+					 */
+					var _open = (self.openMessage == null)? false: self.openMessage;
+					
+					
+					if(_open) {
+						_message = (typeof(_open) == 'function')? String(self.openMessage()): self.openMessage;
+					} else {
 						
-						//get the length of the full title,
-						
-						//check to see if its over the max width, 
-						//if it is, send a concatenated version to value()
-						//else show it.
-						//var _textLength = $.textMetrics(self.__data.fullTitle).width
-						if(self.__data.fullTitle.length > self.maxWidth) {
-							//Make it smaller ...
-							_message = self.__data.fullTitle.substring(0, self.__data.fullTitle - self.maxWidth);
-						} else {
-							_message = self.__data.fullTitle;
+						if(self.__data.concatedTitle) {
+							if(self.__data.fullTitle.length > self.maxWidth) {
+								_message = self.__data.fullTitle.substring(0, self.__data.fullTitle - self.maxWidth);
+							} else {
+								_message = self.__data.fullTitle;
+							}
 						}
 					}
+					
+					self.openWithText(_message, function() {
+						// Check now if already removed mouse (prettier)
+						if(!self.__data.mouseover) {
+							//self._forceStopAnimation();
+							self.close();
+						} else if(self.__data.mouseover) {
+							//do toast dropout
+							window.setTimeout(function(){
+								self.__store('expandClickActive', false)
+								self.me(self.__store('expandClickActive'))
+								self.expand();
+							}, 400)
+						}
+					}, {speed: 'fast'});
 				}
 				
-				self.openWithText(_message, function() {
-					// Check now if already removed mouse (prettier)
-					if(!self.__data.mouseover) {
-						//self._forceStopAnimation();
-						self.close();
-					} else if(self.__data.mouseover) {
-						//do toast dropout
-					}
-				}, {speed: 'fast'});
 			}
-			
-		}
 	}
 	
 	this.mouseOut = function(ev){
-		var preMouseOver = self.__data.mouseover;
-		self.__data.mouseover = false;
-		self.me("Mouse Out");
+		var preMouseOver = self.__store('mouseover');
+		self.__store('mouseover',false);
+		self.me("Mouse Out: mouseOver:", preMouseOver, "self.expanded:", self.expanded, "Click active?: ",  self.__store('expandClickActive'));
 		
 		if(preMouseOver){
-			self.close();
+			if(self.expanded == false)
+			{
+				self.close();
+			} else {
+				/*
+				var ex = self.__store('expandClickActive')
+				//of we are in full view and the user did not click to see it, 
+				// the toast will not lock. it should resize to smalller.
+				if(ex) {
+					self.collapse()					
+				}
+				*/
+			}
 		}
+		
+		if(self.expanded == true && self.__store('expandClickActive') == false) {
+			self.collapse()
+		}
+		
 		//Has toast?
 			// remove
 	}
@@ -478,7 +537,7 @@ var MessageNotify = function(){
 				r = _width;
 			}
 			
-			self.me("Width is", r)
+			//self.me("Width is", r)
 			return r
 		}
 		
@@ -584,8 +643,8 @@ var MessageNotify = function(){
 				from = self.label.width()
 				to = _args[0]
 			} else if(_args.length == 2) {
-				from = self.label.width();
-				to = _args[0];
+				from = _args[0];//self.label.width();
+				to = _args[1];
 				if(jQuery.isFunction(_args[1])) {
 					callback = _args[1]
 				} else {
@@ -811,8 +870,21 @@ function m() {
 	return m
 }
 
-(function($) {
 
+
+(function($) {
+	$.fn.makeAbsolute = function(rebase) {
+	    return this.each(function() {
+	        var el = $(this);
+	        var pos = el.position();
+	        el.css({ position: "absolute",
+	            marginLeft: 0, marginTop: 0, 
+	            zIndex: 9,
+	            top: pos.top, left: pos.left });
+	        if (rebase)
+	            el.remove().appendTo("body");
+	    });
+	}
  $.textMetrics = function(el) {
 
   var h = 0, w = 0;
