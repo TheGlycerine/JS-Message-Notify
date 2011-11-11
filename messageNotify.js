@@ -145,13 +145,11 @@ var MessageNotify = function(){
 	
 	this.click = function(ev) {
 		ev.stopPropagation()
-		
+		self.__store('clicked', true)
 		if(!self.expanded){
 			self.__store('expandClickActive', true)
 			self.expand()
 		}
-		
-		
 	}
 	
 	this.__externalClickListener = function() {
@@ -177,6 +175,7 @@ var MessageNotify = function(){
 		this.__externalClickListener(false)	
 		self.expanded = false
 		self.label.animateTo(400, self.__store('widthBeforeExpand'), function(){
+			self.__store('clicked', false)
 			self.close()
 		});
 		//self.close()
@@ -191,14 +190,22 @@ var MessageNotify = function(){
 	}
 	
 	this.expand = function() {
-		var easing = null;
-		self.__externalClickListener(true)
-		self.__store('heightBeforeExpand', self.element.height())
-		self.__store('widthBeforeExpand', self.element.width())
-		self.__store('positionBeforeExpand', self.element.css('position'))
-		self.expanded = true
-		self.label.animateTo(400)
-		
+ 		if(!self.expanded) {
+			var easing = null;
+			self.__externalClickListener(true)
+			self.__store('heightBeforeExpand', self.element.height())
+			self.__store('widthBeforeExpand', self.element.width())
+			self.__store('positionBeforeExpand', self.element.css('position'))
+			self.expanded = true
+ 			
+	 		if(self.closed) {
+	 			self.open(function(){
+					self.label.animateTo(400)
+	 			})	
+	 		} else {
+				self.label.animateTo(400)
+	 		}
+		}
 		/*
 		self.label.element().animate({width: 400}, 'slow', easing, function(){
 			self.expanded = true
@@ -217,7 +224,7 @@ var MessageNotify = function(){
 			};
 		};
 		
-		return self.__data[el]
+		return (typeof(self.__data[el]) == 'undefined')? false: self.__data[el];
 	}
 	this.mouseOver = function(ev) {
 		// Only perform this action the first time.
@@ -256,13 +263,13 @@ var MessageNotify = function(){
 						if(!self.__data.mouseover) {
 							//self._forceStopAnimation();
 							self.close();
-						} else if(self.__data.mouseover) {
+						} else if(self.__data.mouseover == true|| self.__store('clicked') == true) {
 							//do toast dropout
 							window.setTimeout(function(){
 								self.__store('expandClickActive', false)
 								self.me(self.__store('expandClickActive'))
 								self.expand();
-							}, 400)
+							}, 800)
 						}
 					}, {speed: 'fast'});
 				}
@@ -273,28 +280,33 @@ var MessageNotify = function(){
 	this.mouseOut = function(ev){
 		var preMouseOver = self.__store('mouseover');
 		self.__store('mouseover',false);
-		self.me("Mouse Out: mouseOver:", preMouseOver, "self.expanded:", self.expanded, "Click active?: ",  self.__store('expandClickActive'));
 		
-		if(preMouseOver){
-			if(self.expanded == false)
-			{
-				self.close();
-			} else {
-				/*
-				var ex = self.__store('expandClickActive')
-				//of we are in full view and the user did not click to see it, 
-				// the toast will not lock. it should resize to smalller.
-				if(ex) {
-					self.collapse()					
+		self.me("Mouse Out: mouseOver:", preMouseOver, "self.expanded:", self.expanded, "Click active?: ",  self.__store('expandClickActive'), self.__store('clicked'));
+		
+		if(self.__store('clicked') == false)
+		{
+			if(preMouseOver){
+				if(self.expanded == false)
+				{
+					self.close();
+				} else {
+					/*
+					var ex = self.__store('expandClickActive')
+					//of we are in full view and the user did not click to see it, 
+					// the toast will not lock. it should resize to smalller.
+					if(ex) {
+						self.collapse()					
+					}
+					*/
 				}
-				*/
 			}
+			
+			if(self.expanded == true && self.__store('expandClickActive') == false) {
+				self.collapse()
+			}
+		} else {
+			self.me("Locked open")
 		}
-		
-		if(self.expanded == true && self.__store('expandClickActive') == false) {
-			self.collapse()
-		}
-		
 		//Has toast?
 			// remove
 	}
@@ -310,8 +322,20 @@ var MessageNotify = function(){
 	 */
 	this.close = function() {
 		var _args = arguments;
+		//self.me("Close argument 0", _args[0])
+		if(self.expanded) {
+			self.collapse(function(){
+				this._close.apply(self, _args);
+			});
+		} else {
+			this._close.apply(self, _args);
+		};
+		
+	}
+	
+	this._close = function() {
+		var _args = arguments;
 		var obj = (_args[1])? _args[1]: {};
-		self.me("Close argument 0", _args[0])
 		if(!self.closed)
 			this.label.fadeOut(function(){
 				self.__data.widthBeforeClose = self.label.width()
@@ -321,7 +345,7 @@ var MessageNotify = function(){
 						_args[0]()
 					}
 				}, {'padding-right': 0}, obj);
-			});
+		});
 	}
 	
 	/**
