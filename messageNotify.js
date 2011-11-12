@@ -65,7 +65,7 @@ var MessageNotify = function(){
 	this.animationSpeed = 'slow';
 	
 	// If the title of the message is to long, it should be
-	// cut in length to a determined length. (chars)
+	// cut in length to a determined length.
 	// -1 means no concatenation
 	this.concatTitle = 26;
 	
@@ -84,7 +84,7 @@ var MessageNotify = function(){
 	 * If the messagebox is closed, you can optionally pop the title 
 	 * for a number of seconds before the message box closes itself once more.
 	 */
-	this.popTitle = true
+	self.popTitle = true
 	
 	/**
 	 * If popTitle is true, after popTitle animation is complete, the messagebox
@@ -92,14 +92,14 @@ var MessageNotify = function(){
 	 * If this variable is false, the title will stay and messagebox will
 	 * not return to previous state (closed) 
 	 */
-	this.stickyPopTitle = false
+	self.stickyPopTitle = false
 	
 	/**
 	 * To have the icon constantly blink whilst unread messages exist, apply
 	 * the message waiting.
 	 * This will blink the icon indefinitely until an action is performed 
 	 */
-	this.messageWaiting = true;
+	self.messageWaiting = true;
 	
 	/*
 	 * when hovering over the messagebox, after a certain time, the toast
@@ -107,6 +107,7 @@ var MessageNotify = function(){
 	 * If this is set to false the message toasts must be called using a different
 	 * method.
 	 */
+<<<<<<< HEAD
 	this.hoverToast = true;
 	
 	// If the element is running an animation
@@ -122,9 +123,25 @@ var MessageNotify = function(){
 	 */
 	this.maxWidth = 100;
 	
+<<<<<<< HEAD
 	/* If the element is in full view - is its collapse to read messages
 	 */
 	this.expanded = false;
+=======
+	
+	/**
+	 * Boolean to determine if the element 
+	 * will close itself. or can be closed.
+	 */
+	this.allowClose = true;
+	
+	/**
+	 * The delay in milliseconds for the amount of time after mouse hover
+	 * the toast box should appear. this is not required and it is mainly
+	 * for UX experiance  
+	 */
+	this.hoverToastDelay = 300;
+>>>>>>> master
 	
 	/**
 	 * Initial function used as a class construct
@@ -140,6 +157,7 @@ var MessageNotify = function(){
 		self.element.mouseleave(self.mouseOut)
 		self.element.click(self.click)
 		
+<<<<<<< HEAD
 		self.__store('mouseover', false)
 	}
 	
@@ -150,6 +168,9 @@ var MessageNotify = function(){
 			self.__store('expandClickActive', true)
 			self.expand()
 		}
+=======
+		self.me("Say something")
+>>>>>>> master
 	}
 	
 	this.__externalClickListener = function() {
@@ -170,7 +191,44 @@ var MessageNotify = function(){
 		}
 	}
 	
+	this.animateTo = function(){
+		var _push = [self.element]
+		//animateTo(element, from, to, callback, animationDataObject, configObject)
+		/*
+		self.me('animate args', arguments)
+		for(var i=0; i < 4; i++){
+			self.me(i, _push)
+			if(arguments[i])
+			{
+				if( i == 4) {
+					//this will be the config object. Add the parent to it.
+					if(typeof(arguments[i]) == 'object') {
+						arguments[i]['parent'] = self.element.parent();
+					}
+				} else {
+					_push.push(arguments[i])
+				}
+				
+			} else {
+				_push.push(arguments[i])
+			}
+			
+		}
+		*/
+		self._animateTo.apply(this, [self.element, arguments])	
+	}
+		
+	this.expand = function() {
+		self.me("Begin expand")
+		//animateTo(from, to, callback, animationDataObject, configObject)
+		self.animateTo(null, 400, function(){
+			self.me("Expand phase 1 complete")
+		}, {}, {'speed': 'fast'})
+		
+	}
+	
 	this.collapse = function() {
+<<<<<<< HEAD
 		var easing = null;
 		this.__externalClickListener(false)	
 		self.expanded = false
@@ -226,14 +284,58 @@ var MessageNotify = function(){
 		
 		return (typeof(self.__data[el]) == 'undefined')? false: self.__data[el];
 	}
+=======
+		this.__externalClickListener(false)
+		self.allowClose = true;	
+		self.me("Collapse");
+		self.close()
+	}
+
+	this.click = function(ev) {
+		self.expand()
+		ev.stopPropagation()
+		self.__externalClickListener(true)	
+		self.allowClose = false
+		
+	}
+	
+	this.width = function(){
+		return self.element.width()
+	}
+=======
+	self.hoverToast = true;
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
+	
+>>>>>>> master
 	this.mouseOver = function(ev) {
+		
 		// Only perform this action the first time.
+<<<<<<< HEAD
 		if(self.expanded == false)
 			if(self.__data.mouseover == false) {
 				// Set it to true as this will be over activated.
 				self.__data.mouseover = true;
 				
 				if(!self.animating && self.hoverToast) {
+=======
+		if(!self.__data.mouseover) {	
+			// Set it to true as this will be over activated.
+			self.__data.mouseover = true;
+<<<<<<< HEAD
+			
+			if(m.animating == false && self.hoverToast == true) {
+				var _message = null;
+				 
+				var _open = Boolean(self.openMessage);
+				
+				if(_open) {
+					if(typeof(self.openMessage) == 'function') {
+						_message = String(self.openMessage());
+					}else{
+						_message = self.openMessage;
+					}
+				} else {
+>>>>>>> master
 					
 					var _message = null;
 					
@@ -256,6 +358,8 @@ var MessageNotify = function(){
 								_message = self.__data.fullTitle;
 							}
 						}
+					} else {
+						_message = self.__data.fullTitle;
 					}
 					
 					self.openWithText(_message, function() {
@@ -273,6 +377,7 @@ var MessageNotify = function(){
 						}
 					}, {speed: 'fast'});
 				}
+<<<<<<< HEAD
 				
 			}
 	}
@@ -306,12 +411,53 @@ var MessageNotify = function(){
 			}
 		} else {
 			self.me("Locked open")
+=======
+				//self.me(_message)
+				self.openWithText(_message, function() {
+=======
+					 
+			if(self.hoverToast) {
+				self.openWithText('New Messages', function() {
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
+					// Check now if already removed mouse (prettier)
+					if(!self.__data.mouseover) {
+						//self._forceStopAnimation();
+						self.close();
+					} else if(self.__data.mouseover) {
+						window.setTimeout(function(){
+							if(self.__data.mouseover){
+								self.expand()
+							}else{
+								//Nothing
+							}
+						}, self.hoverToastDelay)
+					}
+				});
+			}
+		}
+	}
+	
+	this.mouseOut = function(ev){
+		var preMouseOver = self.__data.mouseover;
+		self.__data.mouseover = false;
+		
+<<<<<<< HEAD
+		if(preMouseOver && self.allowClose){
+=======
+		//self._forceStopAnimation();
+		//self.close();
+		
+		if(preMouseOver){
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
+			self.close();
+>>>>>>> master
 		}
 		//Has toast?
 			// remove
 	}
 	
 	this._forceStopAnimation = function() {
+		self.me("What?!")
 		self.label.element().stop();
 	}
 	
@@ -322,6 +468,7 @@ var MessageNotify = function(){
 	 */
 	this.close = function() {
 		var _args = arguments;
+<<<<<<< HEAD
 		//self.me("Close argument 0", _args[0])
 		if(self.expanded) {
 			self.collapse(function(){
@@ -336,6 +483,8 @@ var MessageNotify = function(){
 	this._close = function() {
 		var _args = arguments;
 		var obj = (_args[1])? _args[1]: {};
+=======
+>>>>>>> master
 		if(!self.closed)
 			this.label.fadeOut(function(){
 				self.__data.widthBeforeClose = self.label.width()
@@ -344,8 +493,13 @@ var MessageNotify = function(){
 					if(_args[0]) {
 						_args[0]()
 					}
+<<<<<<< HEAD
 				}, {'padding-right': 0}, obj);
 		});
+=======
+				}, {'padding-right': 0})
+			});
+>>>>>>> master
 	}
 	
 	/**
@@ -353,7 +507,7 @@ var MessageNotify = function(){
 	 */
 	this.open = function() {
 		var _args = arguments;
-		var obj = (_args[1])? _args[1]: {};
+		
 		
 		if(self.closed) {
 			var _w = self.__data.widthBeforeClose
@@ -367,7 +521,7 @@ var MessageNotify = function(){
 				if(_args[0]) {
 					_args[0]();
 				}
-			}, {}, obj)
+			})
 			
 		}
 	}
@@ -376,12 +530,12 @@ var MessageNotify = function(){
 	this.openWithText = function() {
 		var _args = arguments
 		var cb = (_args[1])? _args[1]: null;
-		var obj = (_args[2])? _args[2]: {};
+		
 		self.label.value(_args[0], function(){
 			self.__data.widthBeforeClose = self.label.width()
 			self.open(function(){
 				if(cb) cb();
-			}, obj);
+			});
 		});
 	}
 	
@@ -393,6 +547,23 @@ var MessageNotify = function(){
 			self.close();
 		}
 		
+	}
+	
+	/**
+	 * Initial function used as a class construct
+	 */
+	this.init = function(){
+		var args = arguments
+		self.me('init Arguments passed ', args)
+		self.element = $(args[0])
+		self.icon = new this.Icon()
+		self.label = new this.Label()
+		
+		
+		self.element.mouseenter(self.mouseOver)
+		self.element.mouseleave(self.mouseOut)
+		
+		self.me('self.element', self.element)
 	}
 	
 	
@@ -411,10 +582,7 @@ var MessageNotify = function(){
 		if(self.concatTitle > 0) { 
 			// write a smaller version of the title if required
 			title = _title.substring(0, self.concatTitle);
-			self.__data.concatedTitle = false;
-			self.__data.fullTitle = _title;
 			if( _title.length > self.concatTitle) {
-				self.__data.concatedTitle = true;
 				title += '<span class="hellip">&hellip;</span>';
 			}
 		} else {
@@ -493,6 +661,121 @@ var MessageNotify = function(){
 		return w
 	}
 	
+
+	/**
+	 * Measure and resize the box to the width of the given string
+	 * 
+	 * animateTo(element, to)
+	 * animateTo(element, from, to)
+	 * animateTo(element, to, callback)
+	 * animateTo(element, from, to, callback)
+	 * animateTo(element, from, to, callback, animationDataObject, configObject)
+	 * 
+	 */
+	this._animateTo = function(){
+		var _args = arguments
+		var from = 0;
+		var to = 0;
+		var callback = null;
+		var data = {}
+		var _speed = 'slow'
+		var element = _args[0];
+		var parent = element;
+		
+		self.me("Final data to animate", arguments)
+		
+		if(arguments.length == 2) {
+			from = element.width()
+			to = _args[1]
+		} else if(_args.length == 3) {
+			from = element.width();
+			to = _args[1];
+			if(jQuery.isFunction(_args[2])) {
+				callback = _args[2]
+			} else {
+				to = _args[2]
+			}
+		} else if(_args.length >= 4) {
+			from = _args[1]
+			to = _args[2]
+			callback = _args[3]
+			
+			if(_args[4]) {
+				data = _args[4]		
+			}
+		}
+		
+		if(_args[5]){
+			_speed = (_args[5]['speed'])? _args[5]['speed']: self.animationSpeed;
+			parent = (_args[5]['parent'])? _args[5]['parent']: element;
+			//self.me(_args[5], _speed)
+		}
+		
+		var _ = self.me;
+		/*
+		_('from', from)
+		_('to', to)
+		_('data', data)
+		_('config', _args[5])
+		_('element', $(element))
+		_('parent', $(parent))
+		_('callback', callback)
+		*/
+		//self.me("Arg length", _args.length, _args )
+		//self.me("from", from, 'to', to, 'callback', callback())
+		
+		element.width(from);
+		
+		if(from == to){
+			callback();
+		} else {
+			var o = {width: to + 1, 'padding-right': '5px'};
+			
+			for(d in data){
+				o[d] = data[d];	
+			}
+			self.animating = true;			
+			parent.animate(o, _speed, function(){
+				self.animating = false;
+				if(callback){
+					if(typeof(callback) == 'function')
+					{
+						callback();
+						
+					}
+					else
+					{
+						self.me("Callback is", callback)
+					}
+				} 
+			});
+		}
+	}
+	
+	this.__animateTo_attachParent = function() {
+		var _push = []
+		//animateTo(element, from, to, callback, animationDataObject, configObject)
+		for(var i=0; i < 4; i++){
+			self.me(i, _push)
+			if(arguments[i])
+			{
+				if( i == 4) {
+					//this will be the config object. Add the parent to it.
+					if(typeof(arguments[i]) == 'object') {
+						arguments[i]['parent'] = self.element.parent();
+					}
+				} else {
+					_push.push(arguments[i])
+				}
+				
+			} else {
+				_push.push(arguments[i])
+			}
+			
+		}
+		self._animateTo.apply(this, _push)	
+	}
+	
 	this.Label = function(){
 		
 		/*
@@ -509,6 +792,18 @@ var MessageNotify = function(){
 		
 		// Blink the text a number of times.
 		//this.blink = function(count){}
+		
+		this.animateTo = function(){
+			var _push = [self.label.element()]
+			var _args = arguments
+			
+			for(v in arguments){
+				_push.push(arguments[v]) 
+			}
+			self.me('push', _push)
+			
+			self.__animateTo_attachParent.apply(this, _push)	
+		}
 		
 		// Permanently change the text to new value
 		this.value = function(){
@@ -533,6 +828,7 @@ var MessageNotify = function(){
 			}
 			
 		}
+		 
 		
 		/*
 		 * Handles the width slightly different to normal measurements.
@@ -645,6 +941,8 @@ var MessageNotify = function(){
 			self.fadeIn(self.textElement, callBack);
 		}
 		
+<<<<<<< HEAD
+=======
 		/**
 		 * Measure and resize the box to the width of the given string
 		 * 
@@ -661,9 +959,9 @@ var MessageNotify = function(){
 			var to = 0;
 			var callback = null;
 			var data = {}
-			var _speed = 'slow'
 			
-			if(arguments.length == 1) {
+			if(arguments.length == 1)
+			{
 				from = self.label.width()
 				to = _args[0]
 			} else if(_args.length == 2) {
@@ -684,11 +982,6 @@ var MessageNotify = function(){
 				}
 			}
 			
-			if(_args[4]){
-				_speed = (_args[4]['speed'])? _args[4]['speed']: self.animationSpeed;
-				self.me(_args[4], _speed)
-			}
-			
 			//self.me("Arg length", _args.length, _args )
 			//self.me("from", from, 'to', to, 'callback', callback())
 			
@@ -702,13 +995,13 @@ var MessageNotify = function(){
 				for(d in data){
 					o[d] = data[d];	
 				}
-				self.animating = true;			
-				self.label.element().parent().animate(o, _speed, function(){
-					self.animating = false;
+								
+				self.label.element().parent().animate(o, self.animationSpeed, function(){
 					if(callback) callback();
 				});
 			}
 		}
+>>>>>>> parent of f4b616b... collapse code made well. Not includes an expand and a collapse function toggling awaiting styles.
 		
 		// Temp change to text for a number of seconds
 		this.say = function(string){}
@@ -830,7 +1123,6 @@ var MessageNotify = function(){
 						
 					});
 				});
-			
 		}
 		
 	}
@@ -854,7 +1146,67 @@ var MessageNotify = function(){
 			if(_args[1]) _args[1]();
 		}, 'slow')
 	}
+	/*
+	this.animateTo = function(){
+		var _args = arguments
+		var from = 0;
+		var to = 0;
+		var callback = null;
+		var data = {};
+		var _speed = 'slow';
+		var element = null;
+		
+		element = arguments[0];
+		
+		if(arguments.length == 2) {
+			from = self.label.width()
+			to = _args[1]
+		} else if(_args.length == 3) {
+			from = self.label.width();
+			to = _args[1];
+			
+			if(jQuery.isFunction(_args[2])) {
+				callback = _args[2]
+			} else {
+				to = _args[2]
+			}
+		} else if(_args.length >= 4) {
+			from = _args[1]
+			to = _args[2]
+			callback = _args[3]
+			
+			if(_args[4]) {
+				data = _args[4]		
+			}
+		}
+		
+		if(_args[5]){
+			_speed = (_args[5]['speed'])? _args[5]['speed']: self.animationSpeed;
+			self.me(_args[5], _speed)
+		}
+		
+		//self.me("Arg length", _args.length, _args )
+		//self.me("from", from, 'to', to, 'callback', callback())
+		
+		self.label.width(from);
+		
+		if(from == to){
+			callback();
+		} else {
+			var o = {width: to + 3, 'padding-right': '5px'};
+			
+			for(d in data){
+				o[d] = data[d];	
+			}
+			self.animating = true;			
+			self.label.element().parent().animate(o, _speed, function(){
+				self.animating = false;
+				if(callback) callback();
+			});
+		}
+	}
 	
+	*/
 	this.__fade = function() {
 		var el = $(arguments[0])
 		var func = arguments[1]
@@ -922,9 +1274,6 @@ function m() {
    display: 'none'
   });
 
-	if(typeof(el) == 'string') {
-		el = "<div>" + el + "</div>";
-	}
   $(div).html($(el).html());
   var styles = ['font-size','font-style', 'font-weight', 'font-family','line-height', 'text-transform', 'letter-spacing'];
   $(styles).each(function() {
